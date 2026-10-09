@@ -26,6 +26,7 @@ public class FavoritoService {
         Favorito favorito = new Favorito();
         favorito.setProductoId(requestDTO.getProductoId());
         favorito.setNota(requestDTO.getNota());
+        favorito.setListaId(requestDTO.getListaId());
         favorito.setFechaAgregado(LocalDate.now()); // la fecha la pone el sistema, no el cliente
 
         Favorito guardado = favoritoRepository.save(favorito);
@@ -56,6 +57,7 @@ public class FavoritoService {
         Favorito favorito = favoritoRepository.findById(id).get();
         favorito.setProductoId(requestDTO.getProductoId());
         favorito.setNota(requestDTO.getNota());
+        favorito.setListaId(requestDTO.getListaId());
         // la fecha de agregado NO se pisa al actualizar, se mantiene la original
 
         Favorito actualizado = favoritoRepository.update(favorito);
@@ -72,11 +74,13 @@ public class FavoritoService {
 
     // Traductor entidad -> DTO de salida
     private FavoritoResponseDTO mapearAResponseDTO(Favorito favorito) {
-        return new FavoritoResponseDTO(
-                favorito.getId(),
-                favorito.getProductoId(),
-                favorito.getNota(),
-                favorito.getFechaAgregado()
-        );
+        
+     return new FavoritoResponseDTO(
+        favorito.getId(),
+        favorito.getProductoId(),
+        favorito.getNota(),
+        favorito.getFechaAgregado(),
+        favorito.getListaId()
+      );
     }
 }

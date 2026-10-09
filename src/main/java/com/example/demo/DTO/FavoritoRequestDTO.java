@@ -14,4 +14,9 @@ public class FavoritoRequestDTO {
 
     @NotBlank(message = "La nota no puede estar vacía")
     private String nota;
+
+     @NotNull(message = "El id de la lista es obligatorio")
+    private Long listaId;
+    
+    
 }

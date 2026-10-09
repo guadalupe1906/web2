@@ -14,4 +14,5 @@ public class Favorito {
     private Long productoId;      // referencia al producto externo (el id de DummyJSON)
     private String nota;          // nota personal del usuario
     private LocalDate fechaAgregado;
+    private Long listaId;
 }

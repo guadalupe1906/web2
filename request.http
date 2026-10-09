@@ -1,0 +1,123 @@
+### Variables globales
+@baseUrl = http://localhost:8080/api
+
+###############################################################################
+# HEALTH CHECK
+###############################################################################
+
+### Health check
+GET {{baseUrl}}/health
+
+
+###############################################################################
+# PRODUCTOS (Solo lectura desde DummyJSON)
+###############################################################################
+
+### Obtener todos los productos
+GET {{baseUrl}}/productos
+
+### Obtener un producto por ID (Éxito)
+GET {{baseUrl}}/productos/1
+
+
+###############################################################################
+# LISTAS - CASOS DE ÉXITO Y ERROR (NUEVO RECURSO)
+###############################################################################
+
+### 1a. Crear una lista (Éxito - 201 Created)
+# @name crearListaOrigen
+POST {{baseUrl}}/listas
+Content-Type: application/json
+
+{
+  "nombre": "Lista Películas"
+}
+
+### 1b. Crear otra lista (Éxito - 201 Created)
+# @name crearListaDestino
+POST {{baseUrl}}/listas
+Content-Type: application/json
+
+{
+  "nombre": "Lista Favoritos General"
+}
+
+### 1c. Crear una lista con nombre inválido (Error - 400 Bad Request)
+POST {{baseUrl}}/listas
+Content-Type: application/json
+
+{
+  "nombre": ""
+}
+
+### 2a. Listar todas las listas (Éxito - 200 OK)
+GET {{baseUrl}}/listas
+
+### 3a. Obtener una lista por ID existente (Éxito - 200 OK)
+GET {{baseUrl}}/listas/1
+
+### 3b. Obtener una lista por ID inexistente (Error - 404 Not Found)
+GET {{baseUrl}}/listas/99999
+
+### 4a. Listar los favoritos de una lista existente (Éxito - 200 OK)
+GET {{baseUrl}}/listas/1/favoritos
+
+### 4b. Listar los favoritos de una lista inexistente (Error - 404 Not Found)
+GET {{baseUrl}}/listas/99999/favoritos
+
+
+###############################################################################
+# FAVORITOS (Asociados a Listas)
+###############################################################################
+
+### Crear un favorito en la Lista 1 (Éxito - 201 Created)
+POST {{baseUrl}}/favoritos
+Content-Type: application/json
+
+{
+  "productoId": 1,
+  "listaId": 1,
+  "nota": "Excelente producto para ver el fin de semana"
+}
+
+### Crear otro favorito en la Lista 1 (Éxito - 201 Created)
+POST {{baseUrl}}/favoritos
+Content-Type: application/json
+
+{
+  "productoId": 2,
+  "listaId": 1,
+  "nota": "Muy recomendado"
+}
+
+### Listar todos los favoritos (Éxito - 200 OK)
+GET {{baseUrl}}/favoritos
+
+
+###############################################################################
+# OPERACIONES COMPLEJAS DE LISTAS (Mover Favoritos / Eliminar)
+###############################################################################
+
+### 5a. Intentar eliminar una lista QUE TIENE FAVORITOS (Error - 409 Conflict)
+DELETE {{baseUrl}}/listas/1
+
+### 6a. Mover favoritos de Lista 1 a Lista 2 (Éxito - 200 OK)
+# Reasigna todos los favoritos de origenId a destinoId y elimina la lista origen
+POST {{baseUrl}}/listas/1/mover-favoritos
+Content-Type: application/json
+
+{
+  "destinoId": 2
+}
+
+### 6b. Mover favoritos con lista origen o destino INEXISTENTE (Error - 404 Not Found)
+POST {{baseUrl}}/listas/99999/mover-favoritos
+Content-Type: application/json
+
+{
+  "destinoId": 2
+}
+
+### 7a. Eliminar una lista VACÍA (Éxito - 204 No Content)
+# (Una vez vaciada o sin favoritos asociados)
+DELETE {{baseUrl}}/listas/1

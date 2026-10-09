@@ -15,4 +15,5 @@ public class FavoritoResponseDTO {
     private Long productoId;
     private String nota;
     private LocalDate fechaAgregado;
+    private Long listaId;
 }

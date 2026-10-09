@@ -57,4 +57,5 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
     }
+    
 }

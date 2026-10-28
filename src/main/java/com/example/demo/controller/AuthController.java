@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
 import com.example.demo.DTO.RegistroRequest;
+import com.example.demo.DTO.LoginRequest;
 import com.example.demo.DTO.UsuarioResponse;
+import com.example.demo.DTO.LoginResponse;
 import com.example.demo.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,4 +25,10 @@ public class AuthController {
         UsuarioResponse response = usuarioService.registrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @PostMapping("/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+    return usuarioService.login(request);  
+    }
+
 }

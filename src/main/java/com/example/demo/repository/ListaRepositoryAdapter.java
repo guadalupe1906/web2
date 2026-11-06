@@ -10,9 +10,11 @@ import java.util.Optional;
 public class ListaRepositoryAdapter implements ListaRepository {
 
     private final ListaJpaRepository jpa;
+    private final UsuarioJpaRepository usuarioJpaRepository; // Inyectamos el repositorio de usuarios
 
-    public ListaRepositoryAdapter(ListaJpaRepository jpa) {
+    public ListaRepositoryAdapter(ListaJpaRepository jpa, UsuarioJpaRepository usuarioJpaRepository) {
         this.jpa = jpa;
+        this.usuarioJpaRepository = usuarioJpaRepository;
     }
 
     @Override
@@ -41,10 +43,23 @@ public class ListaRepositoryAdapter implements ListaRepository {
     }
 
     private Lista toDomain(ListaEntity e) {
-        return new Lista(e.getId(), e.getNombre());
+        // Extraemos el ID del usuario asociado si la relación no es nula
+        Long usuarioId = (e.getUsuario() != null) ? e.getUsuario().getId() : null;
+        return new Lista(e.getId(), e.getNombre(), usuarioId);
     }
 
     private ListaEntity toEntity(Lista l) {
-        return new ListaEntity(l.getId(), l.getNombre());
+        ListaEntity entity = new ListaEntity();
+        entity.setId(l.getId());
+        entity.setNombre(l.getNombre());
+        
+        // Buscamos y asociamos la entidad UsuarioEntity utilizando el usuarioId del dominio
+        if (l.getUsuarioId() != null) {
+            UsuarioEntity usuarioEntity = usuarioJpaRepository.findById(l.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + l.getUsuarioId()));
+            entity.setUsuario(usuarioEntity);
+        }
+        
+        return entity;
     }
 }

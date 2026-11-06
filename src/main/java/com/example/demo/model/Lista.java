@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class Lista {
     private Long id;
     private String nombre;
+    private Long usuarioId; // <-- Agregado para vincularla al usuario dueño
 }

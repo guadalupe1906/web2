@@ -17,4 +17,8 @@ public class ListaEntity {
 
     @Column(nullable = false, length = 100)
     private String nombre;
+
+    @ManyToOne 
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private UsuarioEntity usuario; // <-- Agregado para vincularla al usuario dueño
 }

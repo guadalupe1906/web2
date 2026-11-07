@@ -1,210 +1,155 @@
-# TP1 · API REST con Spring Boot - Catálogo de Productos y Favoritos
+# TP · API REST con Spring Boot - Catálogo de Productos y Favoritos
 
-API REST desarrollada con Spring Boot que expone dos grupos de endpoints:
-- Productos: catálogo de solo lectura que consume la API externa [DummyJSON](https://dummyjson.com/products).
+API REST desarrollada con **Java 26** y **Spring Boot**, que expone un catálogo de productos de consumo externo y gestión de favoritos con persistencia relacional, control de migraciones y despliegue contenerizado.
 
-- Favoritos: CRUD completo, almacenado en memoria (sin base de datos).
+---
 
+## 🚀 Tecnologías Utilizadas
+* **Java 26**
+* **Spring Boot** (Spring Data JPA, Web, Validation)
+* **Maven** (Gestión de dependencias y empaquetado)
+* **PostgreSQL & Flyway** (Base de datos y control de versiones de esquemas)
+* **Docker & Docker Compose** (Contenerización)
+* **GitHub Actions** (CI/CD Automatizado)
+* **Render** (Despliegue en la nube)
+* **Springdoc OpenAPI / Swagger** (Documentación interactiva)
 
-## Cómo levantar el proyecto
+---
 
-1. Clonar el repositorio:
-```bash
-   git clone <URL_DEL_REPO>
-   cd <NOMBRE_DEL_PROYECTO>
-```
+## 📋 Cómo Levantar el Proyecto
 
-2. Levantar la aplicación:
-```bash
-   ./mvnw spring-boot:run
-```
-   (En Windows: `mvnw.cmd spring-boot:run`)
+### Opción A: Con Docker Compose (Recomendado para Producción / Local completo)
+1. Clonar el repositorio y ubicarse en la raíz.
+2. Iniciar la base de datos y servicios:
+   ```bash
+   docker compose up -d
+Ejecutar la aplicación Spring Boot:
 
-3. La aplicación queda disponible en `http://localhost:8080`.
+Windows (PowerShell): .\mvnw.cmd spring-boot:run
 
-## Documentación de la API (Swagger)
+Linux / macOS / Git Bash: ./mvnw spring-boot:run
 
-Con la app levantada, entrar a:
+Opción B: Ejecución Local
+Asegurarse de tener corriendo una instancia de PostgreSQL en el puerto 5432 con una base de datos llamada app_db.
 
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- Especificación OpenAPI: http://localhost:8080/v3/api-docs
+Verificar las credenciales en src/main/resources/application.properties.
 
-Swagger muestra los dos grupos de endpoints: `productos` y `favoritos`.
+Levantar la aplicación:
 
-## Endpoints
+Bash
+./mvnw spring-boot:run
+La aplicación quedará disponible en http://localhost:8080.
 
-### Salud
+🧪 Ejecución de Tests
+Para compilar el proyecto y ejecutar la suite completa de pruebas unitarias e integración de forma local:
 
-`GET /api/health` verifica que la aplicación esté funcionando.
+En Linux / macOS / Git Bash:
 
-### Productos
+Bash
+./mvnw test
+En Windows (PowerShell):
 
-- `GET /api/productos`: obtiene el catálogo desde DummyJSON y lo transforma al DTO propio.
-- `GET /api/productos/{id}`: obtiene un producto por su identificador.
+PowerShell
+.\mvnw.cmd test
+Los resultados de la ejecución se mostrarán en la consola detallando los tests pasados, fallidos o ignorados.
 
-### Favoritos
+🔄 Integración Continua (CI con GitHub Actions)
+El repositorio cuenta con un pipeline automatizado de GitHub Actions configurado para compilar el proyecto y correr las pruebas ante cada cambio o push en la rama de trabajo.
 
-- `POST /api/favoritos`: crea un favorito y responde `201 Created`.
-- `GET /api/favoritos`: lista todos los favoritos y responde `200 OK`.
-- `GET /api/favoritos/{id}`: obtiene un favorito y responde `200 OK`.
-- `PUT /api/favoritos/{id}`: actualiza un favorito y responde `200 OK`.
-- `DELETE /api/favoritos/{id}`: elimina un favorito y responde `204 No Content`.
+Cómo leer el resultado de CI:
+Dirigite a tu repositorio en GitHub y hacé clic en la pestaña Actions.
 
-El cuerpo para crear o actualizar un favorito es:
+Seleccioná el último workflow ejecutado asociado al commit reciente.
 
-```json
+Indicadores de estado:
+
+🟢 Check verde (Success): El código compila correctamente en Java 26, las dependencias bajaron bien y todas las pruebas pasaron de forma exitosa.
+
+🔴 Cruz roja (Failure): Hubo un error de compilación, una falla en las pruebas unitarias o problemas de configuración. Al hacer clic sobre el job fallido, podrás expandir los logs paso a paso para identificar la línea exacta del error.
+
+☁️ Pasos de Despliegue en Render (Producción)
+Dado que Render no cuenta con un runtime nativo para JVM/Java, la aplicación se despliega empaquetada dentro de un contenedor Docker. Los pasos seguidos para el despliegue fueron:
+
+Creación del Dockerfile: Se configuró un build multi-etapa en la raíz del repositorio utilizando la imagen oficial de Eclipse Temurin (eclipse-temurin:26-jdk para compilar con Maven y eclipse-temurin:26-jre para la ejecución ligera del .jar).
+
+Creación del Servicio Web en Render:
+
+Se conectó el repositorio de GitHub y se seleccionó la rama correspondiente (tp3-starter).
+
+En el tipo de entorno (Environment/Runtime), se seleccionó explícitamente Docker.
+
+Configuración de Variables de Entorno: En el panel de Render se configuraron las variables críticas de producción:
+
+SPRING_DATASOURCE_URL (con el prefijo obligatorio jdbc:postgresql://...).
+
+SPRING_DATASOURCE_USERNAME y SPRING_DATASOURCE_PASSWORD.
+
+SPRING_FLYWAY_ENABLED=true para garantizar la ejecución automática de las migraciones en la base de datos remota.
+
+JWT_SECRET (clave generada por criptografía segura).
+
+Despliegue y Compilación: Mediante un Manual Deploy (o despliegue automático por push), Render lee el Dockerfile, construye la imagen en su infraestructura y levanta el servicio web expuesto públicamente.
+
+📚 Documentación de la API (Swagger UI)
+Con la app levantada, podés explorar y probar todos los endpoints de forma interactiva:
+
+Swagger UI: http://localhost:8080/swagger-ui/index.html (o tu URL de Render /swagger-ui/index.html)
+
+Especificación OpenAPI: http://localhost:8080/v3/api-docs
+
+Swagger muestra agrupados los endpoints de productos y favoritos.
+
+🔌 Endpoints Principales
+Salud
+GET /api/health: Verifica que la aplicación esté funcionando.
+
+Productos
+GET /api/productos: Obtiene el catálogo desde DummyJSON y lo transforma al DTO propio.
+
+GET /api/productos/{id}: Obtiene un producto por su identificador.
+
+Favoritos
+POST /api/favoritos: Crea un favorito y responde 201 Created.
+
+GET /api/favoritos: Lista todos los favoritos (200 OK).
+
+GET /api/favoritos/{id}: Obtiene un favorito específico (200 OK).
+
+PUT /api/favoritos/{id}: Actualiza un favorito (200 OK).
+
+DELETE /api/favoritos/{id}: Elimina un favorito (204 No Content).
+
+Cuerpo esperado para crear o actualizar un favorito:
+
+JSON
 {
    "productoId": 1,
    "nota": "Producto recomendado"
 }
-```
+⚠️ Validación y Manejo de Errores
+La API valida productoId y nota. Ante solicitudes inválidas responde 400 Bad Request. Si el recurso no existe, responde 404 Not Found.
 
-## Validación y errores
+Formato estándar de errores:
 
-La API valida `productoId` y `nota`. Por ejemplo, un request inválido responde `400 Bad Request` con el campo y el motivo del error. Si el favorito no existe, responde `404 Not Found`. Si DummyJSON no está disponible, responde `502 Bad Gateway`.
-
-Los errores usan siempre el siguiente formato:
-
-```json
+JSON
 {
-   "timestamp": "2026-09-17T20:00:00",
+   "timestamp": "2026-11-07T20:00:00",
    "status": 400,
    "mensaje": "Error de validación",
    "detalles": ["nota: La nota no puede estar vacía"]
 }
-```
+🏛️ Decisiones de Arquitectura (Puertos y Adaptadores)
+Clases de Infraestructura nuevas: FavoritoEntity, FavoritoJpaRepository, y FavoritoRepositoryAdapter (implementa el puerto de persistencia conectándose a PostgreSQL).
 
-## Pruebas rápidas
+Independencia del Dominio: FavoritoRepository actúa como puerto (define operaciones sin acoplarlas a una tecnología). Gracias a esto, la transición desde almacenamiento en memoria (TP1) hacia una base de datos relacional (TP2/TP3) no requirió modificar las reglas de negocio, los servicios ni los controladores.
 
-El archivo [requests.http](requests.http) contiene casos de éxito y error para ambos recursos. Puede ejecutarse desde VS Code con la extensión REST Client, o copiarse a Postman/Insomnia.
+🔒 Dónde vive la lógica de autorización (Consigna 4.5)
+La lógica de autorización y control de acceso (verificar permisos sobre los recursos) reside en la capa de servicios de aplicación (Service), desacoplada de los adaptadores web o de infraestructura. Esto garantiza que las reglas de negocio y de seguridad sean agnósticas al protocolo HTTP, facilitando su mantenimiento y testeo unitario.
 
-Ejemplos mínimos:
+🔄 Evolución del Esquema y Flyway
+El versionado de la base de datos se maneja mediante Flyway (V1 a V4).
 
-```bash
-curl http://localhost:8080/api/productos
+Para hacer obligatorio lista_id se implementó una migración nueva (V4) en lugar de alterar scripts anteriores, garantizando la integridad de los entornos ya migrados.
 
-curl -X POST http://localhost:8080/api/favoritos \
-   -H "Content-Type: application/json" \
-   -d '{"productoId":1,"nota":"Producto recomendado"}'
-
-curl -X POST http://localhost:8080/api/favoritos \
-   -H "Content-Type: application/json" \
-   -d '{"productoId":1,"nota":""}'
-```
-
-## Tests
-
-Para compilar y ejecutar las pruebas:
-
-```bash
-./mvnw test
-```
-
-En Windows:
-
-```powershell
-.\mvnw.cmd test
-```
-
-## Puertos y adaptadores: qué cambió en el TP2 (punto 4)
-
-### Clases nuevas
-- `FavoritoEntity`: entidad JPA que representa la tabla `favoritos`.
-- `FavoritoJpaRepository`: interfaz de Spring Data que se encarga de las consultas a PostgreSQL.
-- `FavoritoRepositoryAdapter`: implementa el puerto `FavoritoRepository`, convierte entre
-  `Favorito` (dominio) y `FavoritoEntity`, y delega en `FavoritoJpaRepository`.
-
-### Clase eliminada
-- `InMemoryFavoritoRepository`: la versión del TP1 que guardaba los favoritos en un `Map`.
-
-### Clases que quedaron exactamente iguales
-- `Favorito`
-- `FavoritoRepository` 
-- `FavoritoService`
-- `FavoritoController`
-- Los DTOs de favoritos
-
-### Por qué fue posible
-`FavoritoRepository` es un puerto: define qué operaciones existen (guardar, buscar,
-borrar) pero no cómo se implementan. El service solo depende de ese contrato, no de una
-implementación concreta. Tanto `InMemoryFavoritoRepository` como
-`FavoritoRepositoryAdapter` son adapters: implementaciones concretas de
-infraestructura que se pueden intercambiar detrás de la misma interfaz. Por eso pasar de
-memoria a PostgreSQL no obligó a modificar el dominio, el service ni el controller.
-
-## Evolución del esquema (punto 6)
-
-## Evolución del esquema
-
-Para hacer obligatorio `lista_id` usé una migración nueva (`V4`) y no modifiqué V1, V2 ni V3, porque Flyway guarda un checksum de cada migración ya aplicada y falla si el archivo cambia.Esas migraciones ya corrieron en otras bases, así que editarlas dejaría los esquemas distintos entre sí.
-
-### Justificación de Transacciones (Punto 7.3)
-
-Si elimináramos la anotación `@Transactional` del método `moverFavoritosYEliminarLista` y ocurriera un fallo a mitad de la ejecución (por ejemplo, después de reasignar los favoritos pero justo antes de borrar la lista origen):
-
-* **Inconsistencia en la base de datos:** Los favoritos habrían migrado a la nueva lista destino, pero la lista origen seguiría existiendo activa y vacía en la base de datos.
-* **Violación de la Atomicidad (Propiedades ACID):** La propiedad de Atomicidad establece que una unidad de trabajo compuesta por múltiples operaciones debe ejecutarse de forma "todo o nada". Sin `@Transactional`, las operaciones parciales quedan confirmadas (*committed*) individualmente. Con `@Transactional`, si cualquier paso falla, Spring/JPA ejecuta un *rollback* completo regresando la base de datos a su estado inicial.
-
-### Instrucciones para levantar PostgreSQL y ejecutar la aplicación
-
-### Requisitos previos
-- Docker Desktop instalado y en funcionamiento (o una instalación local de PostgreSQL 16).
-- Java 26 (o compatible) y Maven.
-
-### Pasos de ejecución:
-
-#### Opción A: Con Docker (Recomendado)
-1. Iniciar la base de datos PostgreSQL ejecutando en la raíz del proyecto:
-   ```bash
-   docker compose up -d
-
-Ejecutar la aplicación Spring Boot:
-
-En Windows (PowerShell):
-
-PowerShell
-.\mvnw.cmd spring-boot:run
-En Linux / macOS / Git Bash:
-
-Bash
-./mvnw spring-boot:run
-
-
-### Opción B: Instalación local de PostgreSQL
-Asegurarse de tener el servicio de PostgreSQL corriendo en el puerto 5432.
-
-Crear una base de datos llamada app_db.
-
-Verificar que las credenciales coincidan con las configuradas en src/main/resources/application.properties:
-
-Properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/app_db
-spring.datasource.username=postgres
-spring.datasource.password=postgres
-Iniciar la aplicación ejecutando .\mvnw.cmd spring-boot:run o ./mvnw spring-boot:run.
-
-### Confirmación de las Migraciones de Flyway
-Al iniciar la aplicación, Flyway aplicará automáticamente todos los scripts ubicados en src/main/resources/db/migration/.
-
-A. Confirmación por logs de consola
-En la consola de ejecución de Spring Boot deben figurar líneas similares a:
-
-Plaintext
-INFO --- org.flywaydb.core.FlywayExecutor          : Database: jdbc:postgresql://localhost:5432/app_db (PostgreSQL 16)
-INFO --- o.f.core.internal.command.DbMigrate       : Migrating schema "public" to version "1 - create favoritos"
-INFO --- o.f.core.internal.command.DbMigrate       : Migrating schema "public" to version "2 - create listas"
-INFO --- o.f.core.internal.command.DbMigrate       : Migrating schema "public" to version "3 - add lista id a favoritos"
-INFO --- o.f.core.internal.command.DbMigrate       : Migrating schema "public" to version "4 - lista id obligatorio"
-INFO --- o.f.core.internal.command.DbMigrate       : Successfully applied 4 migrations to schema "public", now at version v4
-B. Consulta en la base de datos (flyway_schema_history)
-Para verificar la tabla de historial generada por Flyway, ejecutar en la terminal:
-
-Con Docker:
-
-Bash
-docker exec -it tp2-postgres psql -U postgres -d app_db -c "SELECT installed_rank, version, description, success FROM flyway_schema_history;"
-Con PostgreSQL local:
-
-Bash
-psql -U postgres -d app_db -c "SELECT installed_rank, version, description, success FROM flyway_schema_history;"
-Todas las migraciones (V1 a V4) deben figurar registradas con success = true (o t).
+Justificación de Transaccionalidad (@Transactional)
+El uso de @Transactional en operaciones complejas garantiza la Atomicidad (propiedades ACID). Si ocurriera un fallo a mitad de una reasignación masiva o eliminación en cascada, Spring ejecuta un rollback completo, evitando estados inconsistentes o registros huérfanos en la base de datos.
